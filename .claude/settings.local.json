@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(timeout /t 3)",
+      "Bash(taskkill:*)",
+      "Bash(pkill:*)",
+      "Bash(git init:*)"
+    ]
+  }
+}

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuiQuiz - Quiz en ligne</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Écran d'accueil -->
+        <div id="home-screen" class="screen active">
+            <h1>QuiQuiz</h1>
+            <p class="subtitle">Testez vos connaissances !</p>
+            <div class="form-group">
+                <input type="text" id="pseudo-input" placeholder="Entrez votre pseudo" maxlength="20">
+            </div>
+            <button id="play-btn" class="btn primary" disabled>Jouer</button>
+        </div>
+
+        <!-- Écran de sélection du thème -->
+        <div id="theme-screen" class="screen">
+            <h2>Bienvenue <span id="player-name"></span> !</h2>
+            <p>Choisissez un ou plusieurs thèmes</p>
+            <div id="themes-list" class="themes-grid"></div>
+            <div class="form-group">
+                <label>Nombre de questions</label>
+                <select id="question-count">
+                    <option value="5">5 questions</option>
+                    <option value="10" selected>10 questions</option>
+                    <option value="20">20 questions</option>
+                </select>
+            </div>
+            <button id="start-quiz-btn" class="btn primary" disabled>Commencer</button>
+            <button id="back-home" class="btn secondary">Retour</button>
+        </div>
+
+        <!-- Écran du quiz -->
+        <div id="quiz-screen" class="screen">
+            <div class="quiz-header">
+                <div class="progress">
+                    <span id="current-question">1</span> / <span id="total-questions">10</span>
+                </div>
+                <div class="timer" id="timer">10</div>
+                <div class="score">Score: <span id="score">0</span></div>
+            </div>
+            <div class="question-container">
+                <h3 id="question-text"></h3>
+                <div class="answer-container">
+                    <input type="text" id="answer-input" placeholder="Votre réponse..." autocomplete="off">
+                    <button id="submit-answer" class="btn primary">Valider</button>
+                </div>
+            </div>
+            <div id="feedback" class="feedback"></div>
+        </div>
+
+        <!-- Écran des résultats -->
+        <div id="result-screen" class="screen">
+            <h2>Partie terminée !</h2>
+            <div class="result-box">
+                <div class="final-score">
+                    <span id="final-score">0</span> / <span id="final-total">10</span>
+                </div>
+                <p id="result-message"></p>
+            </div>
+            <div id="answers-recap" class="recap"></div>
+            <div class="result-buttons">
+                <button id="replay-btn" class="btn primary">Rejouer</button>
+                <button id="change-theme-btn" class="btn secondary">Changer de thème</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
