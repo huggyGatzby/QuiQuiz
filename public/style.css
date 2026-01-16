@@ -131,18 +131,119 @@ input[type="text"]:focus, select:focus {
 
 /* Thèmes */
 .themes-grid {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 15px;
     margin-bottom: 20px;
 }
 
-.theme-card {
-    padding: 20px;
+/* Catégories */
+.category {
     border: 2px solid #e0e0e0;
     border-radius: 12px;
+    overflow: hidden;
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 20px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.category-header:hover {
+    background: #f0f7ff;
+}
+
+.category-header h4 {
+    flex: 1;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.category-icon {
+    font-size: 1.5rem;
+}
+
+.category-toggle {
+    transition: transform 0.3s;
+    color: #666;
+}
+
+.category.expanded .category-toggle {
+    transform: rotate(180deg);
+}
+
+.category-checkbox {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    flex-shrink: 0;
+}
+
+.category-checkbox:hover {
+    border-color: #3b82f6;
+}
+
+.category-checkbox.checked {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.category-checkbox.checked::after {
+    content: '';
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+}
+
+.category-checkbox.partial {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.category-checkbox.partial::after {
+    content: '';
+    width: 10px;
+    height: 3px;
+    background: white;
+    border-radius: 1px;
+}
+
+.category-themes {
+    display: none;
+    padding: 10px;
+    background: white;
+}
+
+.category.expanded .category-themes {
+    display: grid;
+    gap: 10px;
+}
+
+.theme-card {
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s;
-    text-align: center;
+    text-align: left;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .theme-card:hover {
@@ -157,18 +258,16 @@ input[type="text"]:focus, select:focus {
 }
 
 .theme-card .checkbox {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     border: 2px solid #ccc;
-    border-radius: 6px;
+    border-radius: 5px;
     background: white;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s;
+    flex-shrink: 0;
 }
 
 .theme-card.selected .checkbox {
@@ -179,29 +278,27 @@ input[type="text"]:focus, select:focus {
 .theme-card .checkbox::after {
     content: '';
     display: none;
-    width: 6px;
-    height: 12px;
+    width: 5px;
+    height: 10px;
     border: solid #3b82f6;
-    border-width: 0 3px 3px 0;
+    border-width: 0 2px 2px 0;
     transform: rotate(45deg);
-    margin-bottom: 3px;
+    margin-bottom: 2px;
 }
 
 .theme-card.selected .checkbox::after {
     display: block;
 }
 
-.theme-card {
-    position: relative;
-}
-
 .theme-card h4 {
-    margin-bottom: 5px;
+    margin: 0;
+    font-size: 1rem;
+    flex: 1;
 }
 
 .theme-card span {
-    font-size: 0.9rem;
-    opacity: 0.8;
+    font-size: 0.85rem;
+    opacity: 0.7;
 }
 
 /* Quiz */
@@ -356,6 +453,58 @@ input[type="text"]:focus, select:focus {
 .result-buttons {
     display: grid;
     gap: 10px;
+}
+
+/* Carte des départements */
+#map-container {
+    width: 100%;
+    max-width: 450px;
+    margin: 20px auto;
+    background: #f8fafc;
+    border-radius: 15px;
+    padding: 10px;
+}
+
+#map-container svg {
+    width: 100%;
+    height: auto;
+}
+
+.map-question-container {
+    text-align: center;
+}
+
+.map-question-container h3 {
+    margin-bottom: 10px;
+}
+
+/* Styles des départements dans le SVG */
+#map-container .departement {
+    fill: #e0e7ff;
+    stroke: #1e3a8a;
+    stroke-width: 0.5;
+    cursor: pointer;
+    transition: fill 0.2s ease;
+}
+
+#map-container .departement:hover {
+    fill: #a5b4fc;
+}
+
+#map-container .departement.correct {
+    fill: #22c55e !important;
+    stroke: #16a34a;
+    stroke-width: 2;
+}
+
+#map-container .departement.incorrect {
+    fill: #ef4444 !important;
+    stroke: #dc2626;
+    stroke-width: 2;
+}
+
+#map-container .departement.highlight {
+    fill: #fbbf24 !important;
 }
 
 /* Responsive */

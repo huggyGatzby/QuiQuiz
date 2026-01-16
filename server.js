@@ -33,12 +33,20 @@ app.use(express.static('public'));
 // Charger les données
 const capitals = JSON.parse(fs.readFileSync('./data/capitals.json', 'utf8'));
 const departments = JSON.parse(fs.readFileSync('./data/departments.json', 'utf8'));
+const departmentsMap = JSON.parse(fs.readFileSync('./data/departments-map.json', 'utf8'));
 
-// API: Liste des thèmes
+// API: Liste des thèmes organisés par catégories
 app.get('/api/themes', (req, res) => {
   res.json([
-    { id: 'capitals', name: 'Capitales du monde', count: capitals.length },
-    { id: 'departments', name: 'Départements français', count: departments.length }
+    {
+      category: 'Géographie',
+      icon: '🌍',
+      themes: [
+        { id: 'capitals', name: 'Capitales du monde', count: capitals.length },
+        { id: 'departments', name: 'Départements français', count: departments.length },
+        { id: 'departments-map', name: 'Départements (Carte)', count: departmentsMap.length, isMap: true }
+      ]
+    }
   ]);
 });
 
@@ -52,6 +60,8 @@ app.get('/api/quiz/:theme', (req, res) => {
     data = capitals;
   } else if (theme === 'departments') {
     data = departments;
+  } else if (theme === 'departments-map') {
+    data = departmentsMap;
   } else {
     return res.status(400).json({ error: 'Thème inconnu' });
   }

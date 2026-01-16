@@ -7,7 +7,8 @@ const state = {
     score: 0,
     timer: null,
     timeLeft: 10,
-    answers: []
+    answers: [],
+    isMapMode: false
 };
 
 // Éléments DOM
@@ -15,6 +16,7 @@ const screens = {
     home: document.getElementById('home-screen'),
     theme: document.getElementById('theme-screen'),
     quiz: document.getElementById('quiz-screen'),
+    mapQuiz: document.getElementById('map-quiz-screen'),
     result: document.getElementById('result-screen')
 };
 
@@ -29,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupHomeScreen();
     setupThemeScreen();
     setupQuizScreen();
+    setupMapQuizScreen();
     setupResultScreen();
 });
 
@@ -60,19 +63,71 @@ function setupHomeScreen() {
 // === ÉCRAN DES THÈMES ===
 async function loadThemes() {
     const response = await fetch(`${CONFIG.API_URL}/api/themes`);
-    const themes = await response.json();
+    const categories = await response.json();
     const container = document.getElementById('themes-list');
 
-    container.innerHTML = themes.map(theme => `
-        <div class="theme-card" data-theme="${theme.id}">
-            <div class="checkbox"></div>
-            <h4>${theme.name}</h4>
-            <span>${theme.count} questions disponibles</span>
+    container.innerHTML = categories.map(cat => `
+        <div class="category" data-category="${cat.category}">
+            <div class="category-header">
+                <div class="category-checkbox"></div>
+                <span class="category-icon">${cat.icon}</span>
+                <h4>${cat.category}</h4>
+                <span class="category-toggle">▼</span>
+            </div>
+            <div class="category-themes">
+                ${cat.themes.map(theme => `
+                    <div class="theme-card" data-theme="${theme.id}" ${theme.isMap ? 'data-is-map="true"' : ''}>
+                        <div class="checkbox"></div>
+                        <h4>${theme.name}</h4>
+                        <span>${theme.count} questions</span>
+                    </div>
+                `).join('')}
+            </div>
         </div>
     `).join('');
 
-    // Gestion de la sélection multiple
     const startBtn = document.getElementById('start-quiz-btn');
+
+    // Gestion du clic sur les catégories (déplier/replier)
+    container.querySelectorAll('.category-header').forEach(header => {
+        header.addEventListener('click', (e) => {
+            // Si on clique sur la checkbox de catégorie, ne pas toggle l'ouverture
+            if (e.target.classList.contains('category-checkbox')) return;
+
+            const category = header.parentElement;
+            category.classList.toggle('expanded');
+        });
+    });
+
+    // Gestion du clic sur la checkbox de catégorie (tout sélectionner)
+    container.querySelectorAll('.category-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const category = checkbox.closest('.category');
+            const themeCards = category.querySelectorAll('.theme-card');
+            const allSelected = Array.from(themeCards).every(card => card.classList.contains('selected'));
+
+            themeCards.forEach(card => {
+                const theme = card.dataset.theme;
+                if (allSelected) {
+                    // Tout désélectionner
+                    card.classList.remove('selected');
+                    state.selectedThemes = state.selectedThemes.filter(t => t !== theme);
+                } else {
+                    // Tout sélectionner
+                    card.classList.add('selected');
+                    if (!state.selectedThemes.includes(theme)) {
+                        state.selectedThemes.push(theme);
+                    }
+                }
+            });
+
+            updateCategoryCheckbox(category);
+            startBtn.disabled = state.selectedThemes.length === 0;
+        });
+    });
+
+    // Gestion de la sélection des thèmes individuels
     container.querySelectorAll('.theme-card').forEach(card => {
         card.addEventListener('click', () => {
             card.classList.toggle('selected');
@@ -86,10 +141,32 @@ async function loadThemes() {
                 state.selectedThemes = state.selectedThemes.filter(t => t !== theme);
             }
 
-            // Activer/désactiver le bouton selon la sélection
+            // Mettre à jour la checkbox de catégorie
+            const category = card.closest('.category');
+            updateCategoryCheckbox(category);
+
             startBtn.disabled = state.selectedThemes.length === 0;
         });
     });
+
+    // Ouvrir la première catégorie par défaut
+    const firstCategory = container.querySelector('.category');
+    if (firstCategory) {
+        firstCategory.classList.add('expanded');
+    }
+}
+
+function updateCategoryCheckbox(category) {
+    const themeCards = category.querySelectorAll('.theme-card');
+    const selectedCount = category.querySelectorAll('.theme-card.selected').length;
+    const checkbox = category.querySelector('.category-checkbox');
+
+    checkbox.classList.remove('checked', 'partial');
+    if (selectedCount === themeCards.length) {
+        checkbox.classList.add('checked');
+    } else if (selectedCount > 0) {
+        checkbox.classList.add('partial');
+    }
 }
 
 function setupThemeScreen() {
@@ -111,6 +188,9 @@ async function startQuiz() {
 
     const count = parseInt(document.getElementById('question-count').value);
 
+    // Vérifier si on est en mode carte
+    state.isMapMode = state.selectedThemes.includes('departments-map');
+
     // Récupérer les questions de tous les thèmes sélectionnés
     let allQuestions = [];
     for (const theme of state.selectedThemes) {
@@ -128,11 +208,19 @@ async function startQuiz() {
     state.score = 0;
     state.answers = [];
 
-    document.getElementById('total-questions').textContent = state.questions.length;
-    document.getElementById('score').textContent = '0';
-
-    showScreen('quiz');
-    showQuestion();
+    if (state.isMapMode && state.selectedThemes.length === 1) {
+        // Mode carte uniquement
+        document.getElementById('map-total-questions').textContent = state.questions.length;
+        document.getElementById('map-score').textContent = '0';
+        showScreen('mapQuiz');
+        loadMap().then(() => showMapQuestion());
+    } else {
+        // Mode texte classique
+        document.getElementById('total-questions').textContent = state.questions.length;
+        document.getElementById('score').textContent = '0';
+        showScreen('quiz');
+        showQuestion();
+    }
 }
 
 function showQuestion() {
@@ -292,4 +380,139 @@ function setupResultScreen() {
         document.getElementById('start-quiz-btn').disabled = true;
         showScreen('theme');
     });
+}
+
+// === ÉCRAN DU QUIZ CARTE ===
+async function loadMap() {
+    const response = await fetch('france-departments.svg');
+    const svgText = await response.text();
+    document.getElementById('map-container').innerHTML = svgText;
+}
+
+function setupMapQuizScreen() {
+    // Le click listener sera ajouté dynamiquement après le chargement de la carte
+}
+
+function showMapQuestion() {
+    const question = state.questions[state.currentIndex];
+
+    document.getElementById('map-current-question').textContent = state.currentIndex + 1;
+    document.getElementById('map-question-text').textContent = question.question;
+    document.getElementById('map-feedback').className = 'feedback';
+
+    // Réinitialiser tous les départements
+    document.querySelectorAll('#map-container .departement').forEach(dept => {
+        dept.classList.remove('correct', 'incorrect', 'highlight');
+    });
+
+    // Ajouter les listeners de clic
+    document.querySelectorAll('#map-container .departement').forEach(dept => {
+        const deptNum = dept.getAttribute('data-numerodepartement');
+        dept.onclick = () => handleMapClick(deptNum);
+    });
+
+    startMapTimer();
+}
+
+function startMapTimer() {
+    state.timeLeft = 10;
+    updateMapTimerDisplay();
+
+    state.timer = setInterval(() => {
+        state.timeLeft--;
+        updateMapTimerDisplay();
+
+        if (state.timeLeft <= 0) {
+            clearInterval(state.timer);
+            submitMapAnswer(null, true); // Temps écoulé
+        }
+    }, 1000);
+}
+
+function updateMapTimerDisplay() {
+    const timerEl = document.getElementById('map-timer');
+    timerEl.textContent = state.timeLeft;
+
+    timerEl.classList.remove('warning', 'danger');
+    if (state.timeLeft <= 3) {
+        timerEl.classList.add('danger');
+    } else if (state.timeLeft <= 5) {
+        timerEl.classList.add('warning');
+    }
+}
+
+function handleMapClick(departmentId) {
+    clearInterval(state.timer);
+
+    // Désactiver les clics pendant le feedback
+    document.querySelectorAll('#map-container .departement').forEach(dept => {
+        dept.onclick = null;
+    });
+
+    submitMapAnswer(departmentId, false);
+}
+
+function submitMapAnswer(clickedId, timeUp) {
+    const question = state.questions[state.currentIndex];
+    const correctId = question.answer;
+    const feedback = document.getElementById('map-feedback');
+
+    const isCorrect = clickedId === correctId;
+
+    // Récupérer le nom du département cliqué
+    let clickedName = '(Pas de réponse)';
+    if (clickedId) {
+        const clickedDept = document.querySelector(`#map-container [data-numerodepartement="${clickedId}"]`);
+        if (clickedDept) {
+            clickedName = clickedDept.getAttribute('data-nom') || clickedId;
+        }
+    }
+
+    // Récupérer le nom du département correct
+    const correctDept = document.querySelector(`#map-container [data-numerodepartement="${correctId}"]`);
+    const correctName = correctDept ? correctDept.getAttribute('data-nom') : correctId;
+
+    // Sauvegarder la réponse
+    state.answers.push({
+        question: question.question,
+        userAnswer: clickedName,
+        correctAnswer: correctName,
+        isCorrect: isCorrect
+    });
+
+    // Afficher le feedback visuel sur la carte
+    if (clickedId && !isCorrect) {
+        const clickedDept = document.querySelector(`#map-container [data-numerodepartement="${clickedId}"]`);
+        if (clickedDept) {
+            clickedDept.classList.add('incorrect');
+        }
+    }
+
+    // Toujours montrer le bon département
+    if (correctDept) {
+        correctDept.classList.add('correct');
+    }
+
+    // Afficher le feedback texte
+    if (isCorrect) {
+        state.score++;
+        document.getElementById('map-score').textContent = state.score;
+        feedback.textContent = `Correct ! C'est bien ${correctName}`;
+        feedback.className = 'feedback correct';
+    } else {
+        feedback.textContent = timeUp
+            ? `Temps écoulé ! C'était ${correctName}`
+            : `Incorrect ! C'était ${correctName}`;
+        feedback.className = 'feedback incorrect';
+    }
+
+    // Question suivante après 1.5s
+    setTimeout(() => {
+        state.currentIndex++;
+        if (state.currentIndex < state.questions.length) {
+            showMapQuestion();
+        } else {
+            showResults();
+        }
+    }, 1500);
 }
