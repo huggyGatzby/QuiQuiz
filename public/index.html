@@ -18,7 +18,88 @@
             <button id="play-btn" class="btn primary" disabled>Jouer</button>
         </div>
 
-        <!-- Écran de sélection du thème -->
+        <!-- Écran choix de mode -->
+        <div id="mode-screen" class="screen">
+            <h2>Bienvenue <span id="mode-player-name"></span> !</h2>
+            <p class="subtitle">Choisissez votre mode de jeu</p>
+            <div class="mode-buttons">
+                <button id="solo-mode-btn" class="btn mode-card">
+                    <span class="mode-icon">1P</span>
+                    <span class="mode-title">Solo</span>
+                    <span class="mode-desc">Jouez seul et battez vos records</span>
+                </button>
+                <button id="multi-mode-btn" class="btn mode-card">
+                    <span class="mode-icon">VS</span>
+                    <span class="mode-title">Multijoueur</span>
+                    <span class="mode-desc">Affrontez vos amis en temps réel</span>
+                </button>
+            </div>
+            <button id="back-to-home" class="btn secondary">Retour</button>
+        </div>
+
+        <!-- Écran menu multijoueur -->
+        <div id="multi-menu-screen" class="screen">
+            <h2>Mode Multijoueur</h2>
+            <div class="multi-options">
+                <div class="multi-option">
+                    <h3>Créer une partie</h3>
+                    <p>Invitez vos amis avec un code</p>
+                    <button id="create-room-btn" class="btn primary">Créer</button>
+                </div>
+                <div class="multi-divider">OU</div>
+                <div class="multi-option">
+                    <h3>Rejoindre une partie</h3>
+                    <div class="room-code-input">
+                        <input type="text" id="room-code-input" placeholder="ABC123" maxlength="6" autocapitalize="characters">
+                    </div>
+                    <button id="join-room-btn" class="btn primary" disabled>Rejoindre</button>
+                </div>
+            </div>
+            <button id="back-to-mode" class="btn secondary">Retour</button>
+        </div>
+
+        <!-- Écran lobby (salle d'attente) -->
+        <div id="lobby-screen" class="screen">
+            <h2>Salle d'attente</h2>
+            <div class="room-code-display">
+                <span>Code de la salle</span>
+                <div class="code-box" id="display-room-code">------</div>
+                <button id="copy-code-btn" class="btn-icon" title="Copier le code">Copier</button>
+            </div>
+
+            <!-- Paramètres (visible uniquement par l'hôte) -->
+            <div class="lobby-settings" id="lobby-settings">
+                <h3>Paramètres</h3>
+                <div id="lobby-themes-list" class="themes-grid compact"></div>
+                <div class="form-group">
+                    <label>Nombre de questions</label>
+                    <select id="lobby-question-count">
+                        <option value="5">5 questions</option>
+                        <option value="10" selected>10 questions</option>
+                        <option value="20">20 questions</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Paramètres affichés pour les non-hôtes -->
+            <div class="lobby-settings-readonly" id="lobby-settings-readonly" style="display: none;">
+                <h3>Paramètres de la partie</h3>
+                <p id="readonly-themes">Thèmes : -</p>
+                <p id="readonly-questions">Questions : -</p>
+            </div>
+
+            <div class="players-list-container">
+                <h3>Joueurs (<span id="player-count">1</span>)</h3>
+                <ul id="players-list" class="players-list"></ul>
+            </div>
+
+            <div class="lobby-actions">
+                <button id="start-multi-game-btn" class="btn primary" disabled>Lancer la partie</button>
+                <button id="leave-room-btn" class="btn secondary">Quitter</button>
+            </div>
+        </div>
+
+        <!-- Écran de sélection du thème (solo) -->
         <div id="theme-screen" class="screen">
             <h2>Bienvenue <span id="player-name"></span> !</h2>
             <p>Choisissez un ou plusieurs thèmes</p>
@@ -35,7 +116,7 @@
             <button id="back-home" class="btn secondary">Retour</button>
         </div>
 
-        <!-- Écran du quiz -->
+        <!-- Écran du quiz (solo) -->
         <div id="quiz-screen" class="screen">
             <div class="quiz-header">
                 <div class="progress">
@@ -70,7 +151,36 @@
             <div id="map-feedback" class="feedback"></div>
         </div>
 
-        <!-- Écran des résultats -->
+        <!-- Écran quiz multijoueur -->
+        <div id="multi-quiz-screen" class="screen">
+            <div class="quiz-header">
+                <div class="progress">
+                    <span id="multi-current-question">1</span> / <span id="multi-total-questions">10</span>
+                </div>
+                <div class="timer" id="multi-timer">10</div>
+                <div class="score">
+                    Score: <span id="multi-score">0</span>
+                    <span class="rank">(#<span id="multi-rank">1</span>)</span>
+                </div>
+            </div>
+            <div class="question-container">
+                <h3 id="multi-question-text"></h3>
+                <div class="answer-container">
+                    <input type="text" id="multi-answer-input" placeholder="Votre réponse..." autocomplete="off">
+                    <button id="multi-submit-answer" class="btn primary">Valider</button>
+                </div>
+            </div>
+            <div id="multi-feedback" class="feedback"></div>
+            <div class="answered-indicator" id="answered-indicator">
+                <span id="answered-count">0</span>/<span id="total-players">0</span> ont répondu
+            </div>
+            <div class="live-rankings" id="live-rankings">
+                <h4>Classement</h4>
+                <ol id="live-rankings-list"></ol>
+            </div>
+        </div>
+
+        <!-- Écran des résultats (solo) -->
         <div id="result-screen" class="screen">
             <h2>Partie terminée !</h2>
             <div class="result-box">
@@ -85,8 +195,75 @@
                 <button id="change-theme-btn" class="btn secondary">Changer de thème</button>
             </div>
         </div>
+
+        <!-- Écran résultats multijoueur -->
+        <div id="multi-result-screen" class="screen">
+            <h2>Partie terminée !</h2>
+
+            <!-- Podium -->
+            <div class="podium">
+                <div class="podium-place second" id="podium-2">
+                    <div class="podium-rank">2</div>
+                    <div class="podium-name">-</div>
+                    <div class="podium-score">0</div>
+                </div>
+                <div class="podium-place first" id="podium-1">
+                    <div class="podium-rank">1</div>
+                    <div class="podium-name">-</div>
+                    <div class="podium-score">0</div>
+                </div>
+                <div class="podium-place third" id="podium-3">
+                    <div class="podium-rank">3</div>
+                    <div class="podium-name">-</div>
+                    <div class="podium-score">0</div>
+                </div>
+            </div>
+
+            <!-- Classement complet -->
+            <div class="full-rankings">
+                <h3>Classement complet</h3>
+                <ol id="full-rankings-list"></ol>
+            </div>
+
+            <!-- Section hôte : détail des réponses -->
+            <div class="host-details" id="host-details-section" style="display: none;">
+                <h3>Détail des réponses</h3>
+                <div class="player-filter">
+                    <label>Filtrer par joueur :</label>
+                    <select id="player-filter-select">
+                        <option value="all">Tous les joueurs</option>
+                    </select>
+                </div>
+                <div class="answers-table-container">
+                    <table class="answers-table" id="answers-table">
+                        <thead>
+                            <tr>
+                                <th>Q#</th>
+                                <th>Joueur</th>
+                                <th>Réponse</th>
+                                <th>Correct</th>
+                                <th>Points</th>
+                            </tr>
+                        </thead>
+                        <tbody id="answers-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="result-buttons">
+                <button id="multi-replay-btn" class="btn primary">Rejouer</button>
+                <button id="multi-back-menu-btn" class="btn secondary">Menu principal</button>
+            </div>
+        </div>
+
+        <!-- Écran de countdown avant partie -->
+        <div id="countdown-screen" class="screen">
+            <h2>La partie commence dans...</h2>
+            <div class="countdown-number" id="countdown-number">3</div>
+        </div>
     </div>
 
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <script src="config.js"></script>
     <script src="app.js"></script>
 </body>
