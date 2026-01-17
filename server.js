@@ -44,6 +44,8 @@ app.use(express.static('public'));
 const capitals = JSON.parse(fs.readFileSync('./data/capitals.json', 'utf8'));
 const departments = JSON.parse(fs.readFileSync('./data/departments.json', 'utf8'));
 const departmentsMap = JSON.parse(fs.readFileSync('./data/departments-map.json', 'utf8'));
+const histoireFrance = JSON.parse(fs.readFileSync('./data/histoire-france.json', 'utf8'));
+const guerres = JSON.parse(fs.readFileSync('./data/guerres.json', 'utf8'));
 
 // ============================================
 // GESTION DES SALLES MULTIJOUEUR (en mémoire)
@@ -73,6 +75,8 @@ function getQuestionsForThemes(themes, count) {
     if (theme === 'capitals') data = capitals;
     else if (theme === 'departments') data = departments;
     else if (theme === 'departments-map') data = departmentsMap;
+    else if (theme === 'histoire-france') data = histoireFrance;
+    else if (theme === 'guerres') data = guerres;
 
     if (data) {
       allQuestions = allQuestions.concat(data.map(q => ({ ...q, theme })));
@@ -527,6 +531,14 @@ app.get('/api/themes', (req, res) => {
         { id: 'departments', name: 'Départements français', count: departments.length },
         { id: 'departments-map', name: 'Départements (Carte)', count: departmentsMap.length, isMap: true }
       ]
+    },
+    {
+      category: 'Histoire',
+      icon: '📜',
+      themes: [
+        { id: 'histoire-france', name: 'Histoire de France', count: histoireFrance.length },
+        { id: 'guerres', name: 'Guerres mondiales', count: guerres.length }
+      ]
     }
   ]);
 });
@@ -539,6 +551,8 @@ app.get('/api/quiz/:theme', (req, res) => {
   if (theme === 'capitals') data = capitals;
   else if (theme === 'departments') data = departments;
   else if (theme === 'departments-map') data = departmentsMap;
+  else if (theme === 'histoire-france') data = histoireFrance;
+  else if (theme === 'guerres') data = guerres;
   else return res.status(400).json({ error: 'Thème inconnu' });
 
   const shuffled = [...data].sort(() => Math.random() - 0.5);

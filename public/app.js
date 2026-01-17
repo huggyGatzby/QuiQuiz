@@ -221,6 +221,8 @@ function handleRoomJoined({ roomCode, settings, players, isHost }) {
         if (t === 'capitals') return 'Capitales';
         if (t === 'departments') return 'Départements';
         if (t === 'departments-map') return 'Carte';
+        if (t === 'histoire-france') return 'Histoire de France';
+        if (t === 'guerres') return 'Guerres';
         return t;
     }).join(', ');
     document.getElementById('readonly-themes').textContent = `Thèmes : ${themeNames}`;
@@ -258,6 +260,8 @@ function handleSettingsUpdated({ settings }) {
         if (t === 'capitals') return 'Capitales';
         if (t === 'departments') return 'Départements';
         if (t === 'departments-map') return 'Carte';
+        if (t === 'histoire-france') return 'Histoire de France';
+        if (t === 'guerres') return 'Guerres';
         return t;
     }).join(', ');
     document.getElementById('readonly-themes').textContent = `Thèmes : ${themeNames}`;
